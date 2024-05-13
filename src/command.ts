@@ -13,5 +13,16 @@ export abstract class Command {
         this.options = options;
     }
 
+    /**
+     *
+     * @param interaction
+     */
     abstract execute(interaction: Interaction): Promise<void>;
+
+    toJSON() {
+        return {
+            name: this.options.name,
+            description: this.options.description,
+        };
+    }
 }

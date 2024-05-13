@@ -1,5 +1,5 @@
 import { Plugin } from '@shensuo/core';
-import { Client, Collection } from 'discord.js';
+import { Client, Collection, Interaction, REST, Routes } from 'discord.js';
 import { Dirent } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -21,8 +21,8 @@ export class CommandHandler extends Plugin {
 
     public commands: Collection<number, Command>;
 
-    constructor(id: number, options: ICommandHandlerOptions) {
-        super({ id });
+    constructor(name: string, options: ICommandHandlerOptions) {
+        super({ name });
 
         this.#directory = options.directory;
         this.#variants = options.variants;
@@ -38,7 +38,7 @@ export class CommandHandler extends Plugin {
 
             const filepath = resolve(this.#directory, file);
 
-            const importedCommand = new (require(filepath))();
+            const importedCommand = new (await import(filepath)).default();
 
             if (!(importedCommand instanceof Command))
                 throw new Error(`${file} class doesn't extend the Command Class`);
@@ -49,14 +49,31 @@ export class CommandHandler extends Plugin {
         this.#interactionCreate(client);
     }
 
-    async checkAndUpdateCommands() {
-        // This will be used for uploading the commands in this.commands to discord!
+    async checkAndUpdateCommands(client: Client, guildId?: string) {
+        new REST()
+            .setToken(client.token!)
+            .put(
+                guildId
+                    ? Routes.applicationGuildCommands(client.user?.id!, guildId)
+                    : Routes.applicationCommands(client.user?.id!),
+                {
+                    body: this.commands.map((c) => c.toJSON()),
+                }
+            );
     }
 
     async #interactionCreate(client: Client) {
-        // This will handle the interaction create event!
+        client.on('interactionCreate', async (interaction: Interaction) => {
+            if (interaction.isChatInputCommand()) {
+                const command = this.commands.find(
+                    (c) => c.options.name === interaction.commandName
+                );
 
-        while (!client.isReady());
+                if (!command) return;
+
+                await command.execute(interaction);
+            }
+        });
     }
 
     async #getFiles(directory: string, subdirectories?: boolean): Promise<string[]> {
@@ -74,7 +91,7 @@ export class CommandHandler extends Plugin {
                     names.push(...subnames.map((subname) => join(dirent.name, subname)));
                 } else if (dirent.isFile()) names.push(dirent.name);
             }
-            
+
             return names;
         } else {
             return await readdir(directory);
