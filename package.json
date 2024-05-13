@@ -5,8 +5,8 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "module": "./dist/index.mjs",
-    "keywords": [],
-    "author": "",
+    "keywords": ["discord", "discord-bot", "command-handler", "framework", "discord-framework", "discord.js"],
+    "author": "CollegeCrafts (https://github.com/collegecrafts)",
     "license": "MIT",
     "dependencies": {
         "@types/node": "^20.12.11",
