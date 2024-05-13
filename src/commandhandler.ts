@@ -3,7 +3,7 @@ import { Client, Collection } from 'discord.js';
 import { Dirent } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { Command } from './command';
+import { Command } from './command.js';
 
 interface ICommandHandlerOptions {
     directory: string;
@@ -12,7 +12,7 @@ interface ICommandHandlerOptions {
 
 interface ICommandHandlerVairants {
     subdirectories?: boolean;
-    fileTypes?: Array<string>;
+    fileTypes?: string[];
 }
 
 export class CommandHandler extends Plugin {
@@ -56,15 +56,13 @@ export class CommandHandler extends Plugin {
     async #interactionCreate(client: Client) {
         // This will handle the interaction create event!
 
-        while (client.isReady() === false) {
-            if (client.isReady()) break;
-        }
+        while (!client.isReady());
     }
 
-    async #getFiles(directory: string, subdirectories?: boolean): Promise<Array<string>> {
+    async #getFiles(directory: string, subdirectories?: boolean): Promise<string[]> {
         if (subdirectories) {
             const dirents: Dirent[] = await readdir(directory, { withFileTypes: true });
-            const names: (string | string[])[] = [];
+            const names: string[] = [];
 
             for (const dirent of dirents) {
                 if (dirent.isDirectory()) {
@@ -73,10 +71,11 @@ export class CommandHandler extends Plugin {
                         subdirectories
                     );
 
-                    names.push(subnames.map((subname) => join(dirent.name, subname)));
+                    names.push(...subnames.map((subname) => join(dirent.name, subname)));
                 } else if (dirent.isFile()) names.push(dirent.name);
             }
-            return names.flat();
+            
+            return names;
         } else {
             return await readdir(directory);
         }

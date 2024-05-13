@@ -1,2 +1,2 @@
-export * from './command'
-export * from './commandhandler'
+export * from './command.js'
+export * from './commandhandler.js'
