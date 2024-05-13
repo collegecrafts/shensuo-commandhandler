@@ -1,0 +1,21 @@
+{
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules"],
+    "compilerOptions": {
+        "baseUrl": "./",
+        "outDir": "dist",
+        "rootDir": "src",
+        "strict": true,
+        "noImplicitOverride": true,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "allowUnreachableCode": false,
+        "module": "ESNext",
+        "target": "ESNext",
+        "moduleResolution": "Bundler",
+        "lib": ["esnext", "ESNext.Disposable"],
+        "esModuleInterop": true,
+        "declaration": true,
+        "importHelpers": true
+    }
+}
